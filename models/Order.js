@@ -1,0 +1,147 @@
+const mongoose = require("mongoose");
+const AutoIncrement = require("mongoose-sequence")(mongoose);
+
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+    },
+    invoice: {
+      type: Number,
+      required: false,
+    },
+    cart: [{}],
+    user_info: {
+      name: {
+        type: String,
+        required: false,
+      },
+      email: {
+        type: String,
+        required: false,
+      },
+      contact: {
+        type: String,
+        required: false,
+      },
+      address: {
+        type: String,
+        required: false,
+      },
+      city: {
+        type: String,
+        required: false,
+      },
+      country: {
+        type: String,
+        required: false,
+      },
+      zipCode: {
+        type: String,
+        required: false,
+      },
+    },
+    subTotal: {
+      type: Number,
+      required: true,
+    },
+    shippingCost: {
+      type: Number,
+      required: true,
+    },
+    discount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+
+    total: {
+      type: Number,
+      required: true,
+    },
+    shippingOption: {
+      type: String,
+      required: false,
+    },
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+    cardInfo: {
+      type: Object,
+      required: false,
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Processing", "Delivered", "Cancel"],
+    },
+    shipment: {
+      provider: {
+        type: String,
+        default: null,
+      },
+      service: {
+        type: String,
+        default: null,
+      },
+      shipmentId: {
+        type: String,
+        default: null,
+      },
+      trackingId: {
+        type: String,
+        default: null,
+      },
+      trackingUrl: {
+        type: String,
+        default: null,
+      },
+      labelUrl: {
+        type: String,
+        default: null,
+      },
+      status: {
+        type: String,
+        default: null,
+      },
+      cost: {
+        type: Number,
+        default: 0,
+      },
+      currency: {
+        type: String,
+        default: "CAD",
+      },
+      createdAt: {
+        type: Date,
+        default: null,
+      },
+      lastUpdated: {
+        type: Date,
+        default: null,
+      },
+      cancelledAt: {
+        type: Date,
+        default: null,
+      },
+      rawResponse: {
+        type: Object,
+        default: null,
+      },
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const Order = mongoose.model(
+  "Order",
+  orderSchema.plugin(AutoIncrement, {
+    inc_field: "invoice",
+    start_seq: 10000,
+  })
+);
+module.exports = Order;

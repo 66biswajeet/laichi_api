@@ -1,0 +1,319 @@
+//models
+const Setting = require("../models/Setting");
+
+//global setting controller
+const addGlobalSetting = async (req, res) => {
+  try {
+    const newGlobalSetting = new Setting(req.body);
+    await newGlobalSetting.save();
+    res.send({
+      message: "Global Setting Added Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const getGlobalSetting = async (req, res) => {
+  try {
+    // console.log("getGlobalSetting");
+
+    const globalSetting = await Setting.findOne({ name: "globalSetting" });
+
+    if (!globalSetting) {
+      return res.status(404).send({ message: "Global settings not found" });
+    }
+
+    res.send(globalSetting.setting);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const updateGlobalSetting = async (req, res) => {
+  try {
+    const { setting } = req.body;
+
+    // Construct the $set object dynamically
+    const setObject = Object.keys(setting).reduce((acc, key) => {
+      acc[`setting.${key}`] = setting[key];
+      return acc;
+    }, {});
+
+    const globalSetting = await Setting.findOneAndUpdate(
+      { name: "globalSetting" },
+      { $set: setObject },
+      { new: true, upsert: true },
+    );
+
+    res.send({
+      data: globalSetting,
+      message: "Global Setting Update Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+//store setting controller
+const addStoreSetting = async (req, res) => {
+  try {
+    const newStoreSetting = new Setting(req.body);
+    await newStoreSetting.save();
+    res.send({
+      message: "Store Setting Added Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const getStoreSetting = async (req, res) => {
+  try {
+    // console.log("getStoreSetting");
+
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting) {
+      return res.status(404).send({ message: "Store settings not found" });
+    }
+
+    res.send(storeSetting.setting);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const updateStoreSetting = async (req, res) => {
+  try {
+    const { setting } = req.body;
+
+    // Dynamically build the update fields
+    const updateFields = Object.keys(setting).reduce((acc, key) => {
+      acc[`setting.${key}`] = setting[key];
+      return acc;
+    }, {});
+    // Update the online store setting document
+    const storeSetting = await Setting.findOneAndUpdate(
+      { name: "storeSetting" },
+      { $set: updateFields },
+      { new: true, upsert: true }, // upsert to create the document if it doesn't exist
+    );
+
+    res.send({
+      data: storeSetting,
+      message: "Store Setting Update Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+//online store customization controller
+const addStoreCustomizationSetting = async (req, res) => {
+  try {
+    const newStoreCustomizationSetting = new Setting(req.body);
+    const storeCustomizationSetting = await newStoreCustomizationSetting.save();
+
+    res.send({
+      data: storeCustomizationSetting,
+      message: "Online Store Customization Setting Added Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const getStoreCustomizationSetting = async (req, res) => {
+  try {
+    const { key, keyTwo } = req.query;
+    // console.log("getStoreCustomizationSetting");
+
+    // console.log("req query", req.query, "key", key, "keyTwo", keyTwo);
+
+    let projection = {};
+    if (key) {
+      projection[`setting.${key}`] = 1;
+    }
+    if (keyTwo) {
+      projection[`setting.${keyTwo}`] = 1;
+    }
+
+    // If neither key nor keyTwo is provided, fetch all settings
+    if (!key && !keyTwo) {
+      projection = { setting: 1 };
+    }
+
+    const storeCustomizationSetting = await Setting.findOne(
+      { name: "storeCustomizationSetting" },
+      projection,
+    );
+
+    if (!storeCustomizationSetting) {
+      return res.status(404).send({ message: "Settings not found" });
+    }
+
+    res.send(storeCustomizationSetting.setting);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+const getStoreSeoSetting = async (req, res) => {
+  // console.log("getStoreSeoSetting");
+  try {
+    const storeCustomizationSetting = await Setting.findOne(
+      {
+        name: "storeCustomizationSetting",
+      },
+      { "setting.seo": 1, _id: 0 },
+    );
+    // console.log("storeCustomizationSetting", storeCustomizationSetting);
+    // Return the `seo` object directly so frontend can access fields like `favicon`.
+    res.send(storeCustomizationSetting?.setting?.seo || {});
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+const updateStoreCustomizationSetting = async (req, res) => {
+  try {
+    const { setting } = req.body;
+
+    // Dynamically build the update fields
+    const updateFields = Object.keys(setting).reduce((acc, key) => {
+      acc[`setting.${key}`] = setting[key];
+      return acc;
+    }, {});
+    // Update the online store setting document
+    const storeCustomizationSetting = await Setting.findOneAndUpdate(
+      { name: "storeCustomizationSetting" },
+      { $set: updateFields },
+      { new: true, upsert: true }, // upsert to create the document if it doesn't exist
+    );
+
+    res.send({
+      data: storeCustomizationSetting,
+      message: "Online Store Customization Setting Update Successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+// Get Firebase configuration (public endpoint)
+const getFirebaseConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.firebase_status) {
+      return res.status(404).send({
+        message: "Firebase configuration not enabled or not found",
+      });
+    }
+
+    // Return only Firebase config without sensitive fields
+    res.send({
+      enabled: storeSetting.setting.firebase_status,
+      apiKey: storeSetting.setting.firebase_api_key,
+      authDomain: storeSetting.setting.firebase_auth_domain,
+      projectId: storeSetting.setting.firebase_project_id,
+      storageBucket: storeSetting.setting.firebase_storage_bucket,
+      messagingSenderId: storeSetting.setting.firebase_messaging_sender_id,
+      appId: storeSetting.setting.firebase_app_id,
+      measurementId: storeSetting.setting.firebase_measurement_id,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+// Get Cloudinary configuration (public endpoint)
+const getCloudinaryConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.cloudinary_status) {
+      return res.status(404).send({
+        message: "Cloudinary configuration not enabled or not found",
+      });
+    }
+
+    // Return only public Cloudinary config (exclude API secret)
+    res.send({
+      enabled: storeSetting.setting.cloudinary_status,
+      cloudName: storeSetting.setting.cloudinary_cloud_name,
+      uploadPreset: storeSetting.setting.cloudinary_upload_preset,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+// Get Stallion configuration (for backend use)
+const getStallionConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.stallion_status) {
+      return res.status(404).send({
+        message: "Stallion configuration not enabled or not found",
+      });
+    }
+
+    res.send({
+      enabled: storeSetting.setting.stallion_status,
+      apiKeySandbox: storeSetting.setting.stallion_api_key_sandbox,
+      apiKeyProd: storeSetting.setting.stallion_api_key_prod,
+      baseUrlSandbox:
+        storeSetting.setting.stallion_base_url_sandbox ||
+        "https://sandbox.stallionexpress.ca/api/v4/",
+      baseUrlProd:
+        storeSetting.setting.stallion_base_url_prod ||
+        "https://ship.stallionexpress.ca/api/v4/",
+      webhookSecret: storeSetting.setting.stallion_webhook_secret,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+module.exports = {
+  addGlobalSetting,
+  getGlobalSetting,
+  updateGlobalSetting,
+  addStoreSetting,
+  getStoreSetting,
+  updateStoreSetting,
+  getStoreSeoSetting,
+  addStoreCustomizationSetting,
+  getStoreCustomizationSetting,
+  updateStoreCustomizationSetting,
+  getFirebaseConfig,
+  getCloudinaryConfig,
+  getStallionConfig,
+};
