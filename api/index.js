@@ -42,7 +42,12 @@ app.use(helmet());
 
 // CORS configuration for production
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:4100"],
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:4100",
+    "https://laichi-client.vercel.app",
+    "https://laichi-api.onrender.com",
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
 };
