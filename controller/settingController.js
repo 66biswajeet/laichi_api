@@ -1,5 +1,7 @@
 //models
 const Setting = require("../models/Setting");
+const fs = require("fs");
+const path = require("path");
 
 //global setting controller
 const addGlobalSetting = async (req, res) => {
@@ -302,6 +304,87 @@ const getStallionConfig = async (req, res) => {
   }
 };
 
+// Generate XML Sitemap
+const generateSitemap = async (req, res) => {
+  try {
+    const { urls } = req.body;
+
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).send({
+        message: "Please provide an array of URLs",
+      });
+    }
+
+    // Generate XML content
+    const currentDate = new Date().toISOString();
+    
+    let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xmlContent += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    
+    urls.forEach((url) => {
+      if (url && url.trim()) {
+        xmlContent += '  <url>\n';
+        xmlContent += `    <loc>${url.trim()}</loc>\n`;
+        xmlContent += `    <lastmod>${currentDate}</lastmod>\n`;
+        xmlContent += '    <changefreq>weekly</changefreq>\n';
+        xmlContent += '    <priority>0.8</priority>\n';
+        xmlContent += '  </url>\n';
+      }
+    });
+    
+    xmlContent += '</urlset>';
+
+    // Save the sitemap to public folder
+    const publicDir = path.join(__dirname, "..", "public");
+    
+    // Create public directory if it doesn't exist
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+
+    const sitemapPath = path.join(publicDir, "sitemap.xml");
+    fs.writeFileSync(sitemapPath, xmlContent, "utf8");
+
+    // Determine store/front-end base URL from env (prefer store URL)
+    let storeUrl =
+      process.env.STORE_URL ||
+      process.env.NEXT_PUBLIC_STORE_DOMAIN ||
+      process.env.STORE_DOMAIN ||
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL;
+
+    // If no env var provided, try to read the store URL from DB settings
+    if (!storeUrl) {
+      try {
+        const storeSetting = await Setting.findOne({ name: "storeSetting" });
+        const metaUrl = storeSetting?.setting?.meta_url || storeSetting?.setting?.store_url || storeSetting?.setting?.storeDomain;
+        if (metaUrl) storeUrl = metaUrl;
+      } catch (e) {
+        // ignore DB lookup errors and fallback to API host
+      }
+    }
+
+    // Fallback to API host if still no store URL provided
+    let baseUrl = storeUrl || process.env.API_URL || req.protocol + "://" + req.get("host");
+
+    // Normalize: remove trailing slash(es)
+    if (baseUrl && baseUrl.endsWith("/")) {
+      baseUrl = baseUrl.replace(/\/+$/g, "");
+    }
+
+    const sitemapUrl = `${baseUrl}/sitemap.xml`;
+
+    res.send({
+      message: "Sitemap generated successfully!",
+      sitemapUrl: sitemapUrl,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   addGlobalSetting,
   getGlobalSetting,
@@ -316,4 +399,5 @@ module.exports = {
   getFirebaseConfig,
   getCloudinaryConfig,
   getStallionConfig,
+  generateSitemap,
 };

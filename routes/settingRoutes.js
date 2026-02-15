@@ -14,6 +14,7 @@ const {
   getFirebaseConfig,
   getCloudinaryConfig,
   getStallionConfig,
+  generateSitemap,
 } = require("../controller/settingController");
 
 //add a global setting
@@ -56,5 +57,8 @@ router.get("/cloudinary/config", getCloudinaryConfig);
 
 //get Stallion configuration
 router.get("/stallion/config", getStallionConfig);
+
+//generate sitemap
+router.post("/generate-sitemap", generateSitemap);
 
 module.exports = router;

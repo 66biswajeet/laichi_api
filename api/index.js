@@ -23,6 +23,7 @@ const customProductRoutes = require("../routes/customProductRoutes");
 const shipmentRoutes = require("../routes/shipmentRoutes");
 const cookieConsentRoutes = require("../routes/cookieConsentRoutes");
 const pageRoutes = require("../routes/pageRoutes");
+const productReviewRoutes = require("../routes/productReviewRoutes");
 const { isAuth, isAdmin } = require("../config/auth");
 // const {
 //   getGlobalSetting,
@@ -75,6 +76,7 @@ app.use("/api/custom-products/", customProductRoutes);
 app.use("/api/shipping/", shipmentRoutes);
 app.use("/api/cookie-consent/", cookieConsentRoutes);
 app.use("/api/pages/", pageRoutes);
+app.use("/api/product-reviews/", productReviewRoutes);
 
 //if you not use admin dashboard then these two route will not needed.
 app.use("/api/admin/", adminRoutes);
